@@ -29,11 +29,11 @@ defmodule Infiniq.AgentTest do
 
   test "concurrent", %{agent: agent} do
     Agent.push(agent, [1, 2, 3])
-    t1 = Task.async(fn -> Agent.pop(agent) end)
+    t1 = Task.async(fn -> Agent.pop(agent) |> translate end)
     t2 = Task.async(fn -> Agent.push(agent, 4..20) end)
     items =
       for _ <- 1..10,
-        task = Task.async(fn -> Agent.pop(agent) end),
+        task = Task.async(fn -> Agent.pop(agent) |> translate end),
         item = Task.await(task),
         do: item
     item = Task.await(t1)
@@ -41,4 +41,7 @@ defmodule Infiniq.AgentTest do
 
     assert 20 == length(List.wrap(item)) + length(items) + Agent.length(agent)
   end
+
+  defp translate({:ok, value}), do: value
+  defp translate(:error), do: nil
 end
