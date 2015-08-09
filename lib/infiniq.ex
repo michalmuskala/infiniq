@@ -1,0 +1,2 @@
+defmodule Infiniq do
+end
