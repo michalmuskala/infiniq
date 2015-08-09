@@ -16,11 +16,11 @@ defmodule Infiniq.Worker do
 
   def handle_info(:timeout, %{agent: agent, wait: wait} = state) do
     case Infiniq.Agent.pop(agent) do
-      nil ->
-        {:noreply, state, wait}
-      value ->
+      {:ok, value} ->
         send(self, {:work, value})
         {:noreply, state}
+      :error ->
+        {:noreply, state, wait}
     end
   end
 

@@ -6,8 +6,8 @@ defmodule Infiniq.Agent do
   def pop(agent) do
     Agent.get_and_update(agent, fn queue ->
       case :queue.out(queue) do
-        {{:value, item}, new} -> {item, new}
-        {:empty, new}         -> {nil, new}
+        {{:value, item}, new} -> {{:ok, item}, new}
+        {:empty, new}         -> {:error, new}
       end
     end)
   end

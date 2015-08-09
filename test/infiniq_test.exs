@@ -24,7 +24,7 @@ defmodule InfiniqTest do
     Infiniq.Agent.push(name, 1..50)
     Infiniq.Agent.push(name, 51..100)
 
-    assert receive_all(1..100, 500)
+    assert receive_all(1..100, 150)
   end
 
   defp receive_all([], _timeout), do: true

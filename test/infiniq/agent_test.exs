@@ -15,10 +15,10 @@ defmodule Infiniq.AgentTest do
   test "pop", %{agent: agent} do
     Agent.push(agent, [1, 2, 3])
 
-    assert 1 == Agent.pop(agent)
-    assert 2 == Agent.pop(agent)
-    assert 3 == Agent.pop(agent)
-    assert nil == Agent.pop(agent)
+    assert {:ok, 1} == Agent.pop(agent)
+    assert {:ok, 2} == Agent.pop(agent)
+    assert {:ok, 3} == Agent.pop(agent)
+    assert :error   == Agent.pop(agent)
   end
 
   test "length", %{agent: agent} do
