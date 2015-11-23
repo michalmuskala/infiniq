@@ -8,21 +8,22 @@ defmodule InfiniqTest do
   end
 
   test "start_link" do
-    {:ok, _} = Infiniq.start_link({__MODULE__, :test_task, [self]})
+    name = unique_name
+    {:ok, _} = Infiniq.start_link(name, {__MODULE__, :test_task, [self]})
   end
 
   test "runs a task" do
     name = unique_name
-    {:ok, _} = Infiniq.start_link({__MODULE__, :test_task, [self]}, agent_name: name)
-    Infiniq.Agent.push(name, [:ok])
+    start_link(name)
+    Infiniq.push(name, [:ok])
     assert_receive :ok, 150
   end
 
   test "runs all tasks" do
     name = unique_name
-    {:ok, _} = Infiniq.start_link({__MODULE__, :test_task, [self]}, agent_name: name)
-    Infiniq.Agent.push(name, 1..50)
-    Infiniq.Agent.push(name, 51..100)
+    start_link(name)
+    Infiniq.push(name, 1..50)
+    Infiniq.push(name, 51..100)
 
     assert receive_all(1..100, 150)
   end
@@ -36,8 +37,11 @@ defmodule InfiniqTest do
     end
   end
 
+  defp start_link(name) do
+    {:ok, _} = Infiniq.start_link(name, {__MODULE__, :test_task, [self]}, wait: 0)
+  end
+
   def test_task(item, pid) do
     send pid, item
-    :ok
   end
 end

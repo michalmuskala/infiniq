@@ -1,5 +1,5 @@
 defmodule Infiniq.Agent do
-  def start_link(opts \\ []) do
+  def start_link(opts) do
     Agent.start_link(fn -> :queue.new end, opts)
   end
 

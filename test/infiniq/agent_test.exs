@@ -4,7 +4,7 @@ defmodule Infiniq.AgentTest do
   alias Infiniq.Agent
 
   setup do
-    {:ok, pid} = Agent.start_link
+    {:ok, pid} = Agent.start_link([])
     {:ok, agent: pid}
   end
 

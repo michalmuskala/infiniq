@@ -1,27 +1,34 @@
 defmodule Infiniq do
-  def start_link(work, opts \\ []) do
+  def start_link(name, work, opts \\ []) do
     import Supervisor.Spec
 
-    {sup_opts, pool_opts, agent_opts} = split_opts(opts, work)
+    children = [
+      worker(Infiniq.Agent, [agent_opts(name, opts)]),
+      supervisor(Infiniq.WorkerSupervisor,
+                 [work, name, worker_opts(opts), worker_supervisor_opts(name, opts)])
+    ]
 
-    {:ok, sup} = Supervisor.start_link(sup_opts, strategy: :one_for_all)
-
-    agent_spec = worker(Infiniq.Agent, [agent_opts])
-    {:ok, agent} = Supervisor.start_child(sup, agent_spec)
-    pool_spec = supervisor(Infiniq.WorkerSupervisor, [agent, pool_opts])
-    {:ok, _} = Supervisor.start_child(sup, pool_spec)
-
-    {:ok, sup}
+    Supervisor.start_link(children, strategy: :one_for_all)
   end
 
-  defp split_opts(opts, work) do
-    sup_opts   = Keyword.drop(opts, ~w(agent_name pool_size)a)
-    pool_opts  = Keyword.take(opts, ~w(pool_size)a) ++ [work: work]
-    agent_opts =
-      case Keyword.fetch(opts, :agent_name) do
-        {:ok, name} -> [name: name]
-        :error      -> []
-      end
-    {sup_opts, pool_opts, agent_opts}
+  defdelegate push(work, items), to: Infiniq.Agent
+
+  defp agent_opts(name, opts) do
+    opts
+    |> Keyword.take([])
+    |> Keyword.put(:name, name)
   end
+
+  defp worker_opts(opts) do
+    opts
+    |> Keyword.take([:wait])
+  end
+
+  defp worker_supervisor_opts(name, opts) do
+    opts
+    |> Keyword.take([:pool_size])
+    |> Keyword.put(:name, worker_supervisor_name(name))
+  end
+
+  defp worker_supervisor_name(name), do: Module.concat(name, "WorkerSupervisor")
 end
